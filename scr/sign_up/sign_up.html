@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign_out</title>
+    <link rel="stylesheet" href="sign_up.css">
+</head>
+
+<body>
+    <div class="header">
+        <div id="logo">
+            <a href="/scr/main/main.html">Shopping</a>
+        </div>
+    </div>
+
+    <div class="signup_box">
+        <h2>회원가입</h2>
+
+        <div class="input_group">
+            <p>이름</p>
+            <input type="text" placeholder="이름을 입력하세요" id="name">
+            <span class="error_msg" id="name_err"></span>
+        </div>
+
+        <div class="input_group">
+            <p>이메일</p>
+            <input type="email" placeholder="이메일을 입력하세요" id="email">
+            <span class="error_msg" id="email_err"></span>
+        </div>
+
+        <div class="input_group">
+            <p>비밀번호</p>
+            <div class="passwordgr">
+                <input type="password" placeholder="비밀번호를 입력하세요" id="pw">
+                <button onclick="togglePW('pw')">비밀번호 표시</button>
+            </div>
+            <span class="error_msg" id="pw_err"></span>
+        </div>
+
+        <div class="input_group">
+            <p>비밀번호 확인</p>
+            <div class="passwordgr">
+                <input type="password" placeholder="비밀번호를 다시 입력하세요" id="pw_confirm">
+            </div>
+            <span class="error_msg" id="pw_confirm_err"></span>
+        </div>
+    </div>
+
+    <div class="btn_group">
+        <button class="signup_btn">회원가입</button>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup_box">
+            <p>회원가입이 완료되었습니다!</p>
+            <button onclick="closePopup()">확인</button>
+        </div>
+    </div>
+
+    <script src="sign_up.js"></script>
+</body>
+
+</html>

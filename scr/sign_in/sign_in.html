@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <link rel="stylesheet" href="sign_in.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <div id="logo">
+            <a href="/scr/main/main.html">Shopping</a>
+        </div>
+    </div>
+
+    <div class="login_box">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('member')">회원</button>
+            <button class="tab" onclick="switchTab('guest')">비회원</button>
+        </div>
+
+        <div class="tab_content" id="member">
+            <p>이메일</p>
+            <input type="email" placeholder="이메일을 입력하세요" id="email">
+            <span class="error_msg" id="email_err"></span>
+            <p>비밀번호</p>
+            <div class="passwordgr">
+                <input type="password" placeholder="비밀번호를 입력하세요" id="pw">
+                <button onclick="togglePW()">비밀번호 표시</button>
+            </div>
+            <span class="error_msg" id="pw_err"></span>
+        </div>
+
+        <div class="tab_content" id="guest" style="display:none;">
+            <p>주문번호</p>
+            <input type="text" placeholder="주문번호를 입력하세요">
+            <p>이름</p>
+            <input type="text" placeholder="이름을 입력하세요">
+        </div>
+    </div>
+
+    <div class="btn_group">
+        <button class="login_btn">로그인</button>
+        <button class="mem_btn"><a href="/scr/sign_up/sign_up.html">회원가입</a></button>
+    </div>
+
+    <script src="sign_in.js"></script>
+</body>
+
+</html>
