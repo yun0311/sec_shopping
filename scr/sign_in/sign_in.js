@@ -41,6 +41,6 @@ document.querySelector(".login_btn").addEventListener("click", function () {
     pwError.textContent = "⚠ 비밀번호가 틀렸습니다.";
   } else {
     pwError.textContent = "";
-    window.location.href = "/main.html";
+    window.location.href = "/scr/main.html";
   }
 });

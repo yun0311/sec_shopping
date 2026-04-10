@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign_out</title>
+    <title>회원가입</title>
     <link rel="stylesheet" href="sign_up.css">
 </head>
 
 <body>
     <div class="header">
         <div id="logo">
-            <a href="/scr/main/main.html">Shopping</a>
+            <a href="/scr/main.html">Shopping</a>
         </div>
     </div>
 
@@ -43,6 +42,7 @@
             <p>비밀번호 확인</p>
             <div class="passwordgr">
                 <input type="password" placeholder="비밀번호를 다시 입력하세요" id="pw_confirm">
+                <button onclick="togglePW('pw_confirm')">비밀번호 표시</button>
             </div>
             <span class="error_msg" id="pw_confirm_err"></span>
         </div>
