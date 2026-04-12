@@ -23,7 +23,7 @@
 
   /* 라이트 모드 시맨틱 */
   --bg-page:     var(--cream);
-  --bg-card:     #ffffff;
+  --bg-card:     var(--cream);          /* 라이트: 카드 하단 크림 */
   --bg-header:   var(--navy);
   --bg-header2:  var(--navy-mid);
   --bg-nav:      var(--beige);          /* 베이지 NAV */
@@ -665,10 +665,11 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-sm);
   font-size: 13px;
   color: var(--text-main);
-  background: var(--bg-card);
+  background: #ffffff;
   cursor: pointer; outline: none;
   transition: var(--transition);
 }
+[data-theme="dark"] #sortSelect { background: var(--navy-mid); }
 #sortSelect:focus { border-color: var(--navy); }
 [data-theme="dark"] #sortSelect { color: var(--cream); }
 [data-theme="dark"] #sortSelect:focus { border-color: var(--cream); }
@@ -693,8 +694,8 @@ img { max-width: 100%; display: block; }
 
 /* ────────────────────────────────────────────
    상품 그리드
-   라이트: 카드 흰색 (크림 배경과 대비)
-   다크:   카드 #111d36 (네이비보다 약간 밝게)
+   라이트: 이미지 영역 흰색, 카드 하단 크림
+   다크:   이미지 영역 어두운 네이비, 카드 하단 밝은 네이비
    ──────────────────────────────────────────── */
 .product-grid {
   display: grid;
@@ -704,7 +705,8 @@ img { max-width: 100%; display: block; }
 .product-grid.list-view { grid-template-columns: 1fr; }
 
 .product-card {
-  background: var(--bg-card);   /* 라이트 #fff, 다크 #111d36 */
+  /* 라이트: 카드 전체 기본 크림, 다크: 카드 전체 기본 밝은 네이비 */
+  background: var(--cream);
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -714,6 +716,9 @@ img { max-width: 100%; display: block; }
   position: relative;
   animation: fadeInUp 0.4s ease both;
 }
+[data-theme="dark"] .product-card {
+  background: #1a2a4a;   /* 카드 하단(정보 영역): 밝은 네이비 */
+}
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -722,15 +727,15 @@ img { max-width: 100%; display: block; }
 
 .product-img {
   height: 220px;
-  /* 라이트: 크림 그라디언트 */
-  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-deep) 100%);
+  /* 라이트: 이미지 영역 흰색 */
+  background: #ffffff;
   display: flex; align-items: center; justify-content: center;
   font-size: 80px; position: relative; overflow: hidden;
   transition: background 0.35s ease;
 }
-/* 다크: 약간 밝은 네이비 그라디언트 */
+/* 다크: 이미지 영역 더 어두운 네이비 */
 [data-theme="dark"] .product-img {
-  background: linear-gradient(135deg, #1a2a4a 0%, #111d36 100%);
+  background: #060e20;
 }
 
 .product-badges {
@@ -750,11 +755,15 @@ img { max-width: 100%; display: block; }
   position: absolute; top: 12px; right: 12px;
   width: 36px; height: 36px;
   border-radius: 50%;
-  background: var(--bg-card);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   display: flex; align-items: center; justify-content: center;
   font-size: 16px; color: var(--text-muted);
   z-index: 2; transition: var(--transition);
+}
+[data-theme="dark"] .wish-btn {
+  background: #1a2a4a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .wish-btn:hover, .wish-btn.active { color: var(--red); transform: scale(1.1); }
 
