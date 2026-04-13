@@ -132,121 +132,224 @@ function switchModal(from, to) {
 /* ============================================
    로그인 / 회원가입
    ============================================ */
+/* ============================================
+   LUXMART — main.js (통합본)
+   기능: 로그인 상태 유지, 관리자 체크, 회원가입 및 보안 실습
+   ============================================ */
+
+// 관리자 설정
+const ADMIN_CONFIG = {
+    email: "admin@admin.com",
+    pw: "admin"
+};
+
+/* ============================================
+   로그인 상태 유지 및 UI 업데이트
+   ============================================ */
+
+// 페이지 로드 시 실행: 저장된 로그인 정보가 있으면 UI 복구
+function checkLoginStatus() {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser) {
+        const user = JSON.parse(savedUser);
+        state.currentUser = user;
+        updateUIForLogin(user);
+    }
+}
+
+// 로그인 성공 시 UI 변경 로직 통합
+function updateUIForLogin(user) {
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const mypageBtn = document.getElementById('mypageBtn');
+
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (registerBtn) registerBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = '';
+    if (mypageBtn) {
+        mypageBtn.style.display = '';
+        mypageBtn.textContent = `${user.name}님`;
+    }
+
+    // 관리자 계정일 경우 관리자 링크 생성
+    if (user.email === ADMIN_CONFIG.email) {
+        createAdminLink();
+    }
+}
+
+/* ============================================
+   로그인 / 로그아웃 / 회원가입 핸들러
+   ============================================ */
+
 function handleLogin() {
-  const id = document.getElementById('loginId').value.trim();
-  const pw = document.getElementById('loginPw').value.trim();
-  if (!id || !pw) {
-    showToast('<i class="fa fa-exclamation-circle"></i> 아이디와 비밀번호를 입력해주세요', 'error');
-    return;
-  }
-  const fakeUser = { id, name: id.split('@')[0] || id, email: id };
-  state.currentUser = fakeUser;
-  document.getElementById('loginBtn').style.display    = 'none';
-  document.getElementById('registerBtn').style.display = 'none';
-  document.getElementById('logoutBtn').style.display   = '';
-  document.getElementById('mypageBtn').style.display   = '';
-  document.getElementById('mypageBtn').textContent     = `${fakeUser.name}님`;
-  closeModal('loginModal');
-  showToast(`<i class="fa fa-check-circle"></i> ${fakeUser.name}님, 환영합니다!`, 'success');
-  logSecurityEvent('LOGIN_ATTEMPT', { userId: id, timestamp: new Date().toISOString(), ip: '192.168.1.1' });
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value.trim();
+
+    if (!id || !pw) {
+        showToast('<i class="fa fa-exclamation-circle"></i> 아이디와 비밀번호를 입력해주세요', 'error');
+        return;
+    }
+
+    // 관리자 여부 확인 후 유저 객체 생성
+    let user;
+    if (id === ADMIN_CONFIG.email && pw === ADMIN_CONFIG.pw) {
+        user = { id: 'admin', name: '관리자', email: id, role: 'admin' };
+        alert("관리자 계정으로 로그인되었습니다.");
+    } else {
+        user = { id, name: id.split('@')[0], email: id, role: 'user' };
+        showToast(`<i class="fa fa-check-circle"></i> ${user.name}님, 환영합니다!`, 'success');
+    }
+
+    // LocalStorage에 저장하여 상태 유지
+    state.currentUser = user;
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    updateUIForLogin(user);
+    closeModal('loginModal');
+    
+    logSecurityEvent('LOGIN_ATTEMPT', { userId: id, timestamp: new Date().toISOString() });
 }
 
 function handleLogout() {
-  state.currentUser = null;
-  document.getElementById('loginBtn').style.display    = '';
-  document.getElementById('registerBtn').style.display = '';
-  document.getElementById('logoutBtn').style.display   = 'none';
-  document.getElementById('mypageBtn').style.display   = 'none';
-  showToast('<i class="fa fa-sign-out-alt"></i> 로그아웃 되었습니다');
-  logSecurityEvent('LOGOUT', { timestamp: new Date().toISOString() });
+    if (confirm("로그아웃 하시겠습니까?")) {
+        state.currentUser = null;
+        localStorage.removeItem("currentUser"); // 저장된 정보 삭제
+
+        // UI 복구
+        document.getElementById('loginBtn').style.display = '';
+        document.getElementById('registerBtn').style.display = '';
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('mypageBtn').style.display = 'none';
+        
+        // 관리자 링크가 있다면 삭제
+        const adminBtn = document.getElementById('adminMoveBtn');
+        if (adminBtn) adminBtn.remove();
+
+        showToast('<i class="fa fa-sign-out-alt"></i> 로그아웃 되었습니다');
+        logSecurityEvent('LOGOUT', { timestamp: new Date().toISOString() });
+        
+        // 깔끔한 처리를 위해 페이지 새로고침
+        location.reload();
+    }
 }
 
 function handleRegister() {
-  const name  = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pw    = document.getElementById('regPw').value;
-  const pwc   = document.getElementById('regPwConfirm').value;
-  const agreeItems = document.querySelectorAll('.agree-item');
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pw = document.getElementById('regPw').value;
+    const pwc = document.getElementById('regPwConfirm').value;
+    const agreeItems = document.querySelectorAll('.agree-item');
 
-  if (!name || !email || !pw) {
-    showToast('<i class="fa fa-exclamation-circle"></i> 필수 항목을 모두 입력해주세요', 'error');
-    return;
-  }
-  if (pw !== pwc) {
-    showToast('<i class="fa fa-exclamation-circle"></i> 비밀번호가 일치하지 않습니다', 'error');
-    return;
-  }
-  if (!agreeItems[0].checked || !agreeItems[1].checked) {
-    showToast('<i class="fa fa-exclamation-circle"></i> 필수 약관에 동의해주세요', 'error');
-    return;
-  }
-  closeModal('registerModal');
-  showToast('<i class="fa fa-gift"></i> 회원가입 완료! 5,000원 쿠폰이 지급되었습니다', 'success');
-  logSecurityEvent('REGISTER', { name, email, timestamp: new Date().toISOString() });
-  state.currentUser = { id: email, name, email };
-  document.getElementById('loginBtn').style.display    = 'none';
-  document.getElementById('registerBtn').style.display = 'none';
-  document.getElementById('logoutBtn').style.display   = '';
-  document.getElementById('mypageBtn').style.display   = '';
-  document.getElementById('mypageBtn').textContent     = `${name}님`;
+    if (!name || !email || !pw) {
+        showToast('<i class="fa fa-exclamation-circle"></i> 필수 항목을 모두 입력해주세요', 'error');
+        return;
+    }
+    if (pw !== pwc) {
+        showToast('<i class="fa fa-exclamation-circle"></i> 비밀번호가 일치하지 않습니다', 'error');
+        return;
+    }
+    if (!agreeItems[0].checked || !agreeItems[1].checked) {
+        showToast('<i class="fa fa-exclamation-circle"></i> 필수 약관에 동의해주세요', 'error');
+        return;
+    }
+
+    const user = { id: email, name, email, role: 'user' };
+    state.currentUser = user;
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    closeModal('registerModal');
+    showToast('<i class="fa fa-gift"></i> 회원가입 완료!', 'success');
+    updateUIForLogin(user);
+    logSecurityEvent('REGISTER', { name, email, timestamp: new Date().toISOString() });
 }
 
+/* ============================================
+   관리자 전용 기능
+   ============================================ */
+
+function createAdminLink() {
+    const headerLinks = document.querySelector('.header-top-links');
+    const customerLink = headerLinks.querySelector('a[href="customer.html"]');
+    
+    if (document.getElementById('adminMoveBtn')) return;
+
+    const adminBtn = document.createElement('a');
+    adminBtn.id = 'adminMoveBtn';
+    adminBtn.href = 'admin.html';
+    adminBtn.innerHTML = '<i class="fa fa-user-shield"></i> 관리자';
+    adminBtn.style.color = 'var(--accent)';
+    adminBtn.style.fontWeight = 'bold';
+    adminBtn.style.marginRight = '10px';
+
+    if (customerLink) {
+        headerLinks.insertBefore(adminBtn, customerLink);
+    } else {
+        headerLinks.appendChild(adminBtn);
+    }
+}
+
+/* ============================================
+   기타 유틸리티 기능 (기존 유지)
+   ============================================ */
+
 function checkEmail() {
-  const email = document.getElementById('regEmail').value.trim();
-  if (!email) { showToast('이메일을 먼저 입력해주세요', 'error'); return; }
-  showToast('<i class="fa fa-check-circle"></i> 사용 가능한 이메일입니다', 'success');
+    const email = document.getElementById('regEmail').value.trim();
+    if (!email) { showToast('이메일을 먼저 입력해주세요', 'error'); return; }
+    showToast('<i class="fa fa-check-circle"></i> 사용 가능한 이메일입니다', 'success');
 }
 
 function sendResetEmail() {
-  const email = document.getElementById('findEmail').value.trim();
-  if (!email) { showToast('이메일을 입력해주세요', 'error'); return; }
-  showToast(`<i class="fa fa-envelope"></i> ${email}로 임시 비밀번호를 발송했습니다`, 'success');
-  closeModal('findPwModal');
-  logSecurityEvent('PASSWORD_RESET_REQUEST', { email, timestamp: new Date().toISOString() });
+    const email = document.getElementById('findEmail').value.trim();
+    if (!email) { showToast('이메일을 입력해주세요', 'error'); return; }
+    showToast(`<i class="fa fa-envelope"></i> ${email}로 임시 비밀번호를 발송했습니다`, 'success');
+    closeModal('findPwModal');
 }
 
 function socialLogin(provider) {
-  showToast(`<i class="fa fa-spinner fa-spin"></i> ${provider} 로그인 중...`);
-  setTimeout(() => {
-    state.currentUser = { id: `${provider}_user`, name: `${provider}회원`, email: `user@${provider}.com` };
-    document.getElementById('loginBtn').style.display    = 'none';
-    document.getElementById('registerBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display   = '';
-    document.getElementById('mypageBtn').style.display   = '';
-    document.getElementById('mypageBtn').textContent     = `${provider}회원님`;
-    closeModal('loginModal');
-    showToast(`<i class="fa fa-check-circle"></i> ${provider}로 로그인 되었습니다`, 'success');
-  }, 1000);
+    showToast(`<i class="fa fa-spinner fa-spin"></i> ${provider} 로그인 중...`);
+    setTimeout(() => {
+        const user = { id: `${provider}_user`, name: `${provider}회원`, email: `user@${provider}.com` };
+        state.currentUser = user;
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        updateUIForLogin(user);
+        closeModal('loginModal');
+        showToast(`<i class="fa fa-check-circle"></i> ${provider}로 로그인 되었습니다`, 'success');
+    }, 1000);
 }
 
 function toggleAllAgree(cb) {
-  document.querySelectorAll('.agree-item').forEach(el => el.checked = cb.checked);
+    document.querySelectorAll('.agree-item').forEach(el => el.checked = cb.checked);
 }
 
 function checkPwStrength(pw) {
-  const bar = document.getElementById('pwBar');
-  const msg = document.getElementById('pwMsg');
-  let score = 0;
-  if (pw.length >= 8)          score++;
-  if (/[A-Z]/.test(pw))        score++;
-  if (/[0-9]/.test(pw))        score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const colors = ['#d32f2f', '#ff9800', '#fbc02d', '#2e7d32'];
-  const labels = ['매우 약함', '약함', '보통', '강함'];
-  bar.style.width      = (score / 4 * 100) + '%';
-  bar.style.background = colors[score - 1] || '#eee';
-  msg.textContent      = pw ? `비밀번호 강도: ${labels[score - 1] || '입력 중'}` : '';
+    const bar = document.getElementById('pwBar');
+    const msg = document.getElementById('pwMsg');
+    if(!bar || !msg) return;
+
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    const colors = ['#d32f2f', '#ff9800', '#fbc02d', '#2e7d32'];
+    const labels = ['매우 약함', '약함', '보통', '강함'];
+    bar.style.width = (score / 4 * 100) + '%';
+    bar.style.background = colors[score - 1] || '#eee';
+    msg.textContent = pw ? `비밀번호 강도: ${labels[score - 1] || '입력 중'}` : '';
 }
 
 function fakeAddrSearch() {
-  const addrs = [
-    '서울특별시 강남구 테헤란로 123',
-    '서울특별시 마포구 월드컵북로 456',
-    '경기도 성남시 분당구 판교역로 789',
-  ];
-  document.getElementById('regAddr').value = addrs[Math.floor(Math.random() * addrs.length)];
-  showToast('주소가 선택되었습니다');
+    const addrs = ['서울특별시 강남구 테헤란로 123', '서울특별시 마포구 월드컵북로 456', '경기도 성남시 분당구 판교역로 789'];
+    document.getElementById('regAddr').value = addrs[Math.floor(Math.random() * addrs.length)];
+    showToast('주소가 선택되었습니다');
 }
+
+// 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    checkLoginStatus(); // 로그인 유지 확인
+});
 
 /* ============================================
    상품 렌더링
